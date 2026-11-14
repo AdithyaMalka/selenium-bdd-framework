@@ -1,0 +1,92 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.automation'
+version = '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    seleniumVersion = '4.19.1'
+    cucumberVersion = '7.16.1'
+    testngVersion = '7.9.0'
+    webdrivermanagerVersion = '5.7.0'
+    log4jVersion = '2.23.1'
+    restAssuredVersion = '5.5.6'
+    cucumberReportingVersion = '5.8.0'
+    assertjVersion = '3.24.2'
+    lombokVersion = '1.18.38'
+    jacksonVersion = '2.16.1'
+    guavaVersion = '33.0.0-jre'
+    slf4jVersion = '2.0.11'
+}
+
+dependencies {
+
+    // Selenium
+    implementation "org.seleniumhq.selenium:selenium-java:${seleniumVersion}"
+
+    // Cucumber
+    implementation "io.cucumber:cucumber-java:${cucumberVersion}"
+    implementation "io.cucumber:cucumber-testng:${cucumberVersion}"
+
+    // TestNG
+    implementation "org.testng:testng:${testngVersion}"
+
+    // WebDriver Manager
+    implementation "io.github.bonigarcia:webdrivermanager:${webdrivermanagerVersion}"
+
+    // Logging (Log4j2)
+    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+
+    // REST Assured (API testing)
+    implementation "io.rest-assured:rest-assured:${restAssuredVersion}"
+
+    // Cucumber HTML Reporting
+    implementation "net.masterthought:cucumber-reporting:${cucumberReportingVersion}"
+
+    // Assertions
+    implementation "org.assertj:assertj-core:${assertjVersion}"
+
+    // Lombok
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    // Jackson (for JSON processing)
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+
+    // Guava (Google's core libraries for Java)
+    implementation "com.google.guava:guava:${guavaVersion}"
+
+    // SLF4J (Simple Logging Facade for Java)
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation "org.slf4j:slf4j-log4j12:${slf4jVersion}"
+
+    // Commons IO
+    implementation "commons-io:commons-io:2.11.0"
+}
+
+test {
+    useTestNG()
+    scanForTestClasses = false
+    systemProperty 'file.encoding', 'UTF-8'
+    systemProperties(System.getProperties())
+}
