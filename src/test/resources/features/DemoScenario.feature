@@ -4,4 +4,3 @@
     Scenario: Testing
       Given User Login into Omayo Application
       Then verify the login is successful
-#abc
