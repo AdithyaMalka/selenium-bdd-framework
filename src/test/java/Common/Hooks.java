@@ -24,8 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import static core.driver.DriverManager.getFailureMap;
-import static core.driver.DriverManager.setGlobalTimeStamp;
+import static core.driver.DriverManager.*;
 import static core.reporter.QuoteFileReporter.getAllFiles;
 import static utils.QuoteTabCleanup.closeAllQuoteTabs;
 
@@ -45,6 +44,17 @@ public class Hooks {
 
     private static final List<TimeTakenObject> timeTakenObjectList =
             Collections.synchronizedList(new ArrayList<>());
+
+    public static void addFailureScreenshot(HashMap<String, byte[]> screenshotFailureMap) {
+        for(String key : screenshotFailureMap.keySet()) {
+            try{
+                Hooks.scenario.get().attach(screenshotFailureMap.get(key), "image/png", "Assert failure: " + key);
+            } catch (InvalidPathException e) {
+                System.out.println("Invalid path: " + e.getMessage());
+                Hooks.scenario.get().attach(screenshotFailureMap.get(key), "image/png", "Assert failure: invalid screenshot name");
+            }
+        }
+    }
 
     public static void addScreenshot(String screenshotName) {
         try {
@@ -296,6 +306,9 @@ public class Hooks {
                 "text/plain",
                 "Assertion Failures"
         );
+        if(Constants.SCREENSHOT_ON_ASSERTION_FAIL) {
+            addFailureScreenshot(getScreenshotFailureMap());
+        }
     }
 
     public static void addData(String description, String value) {

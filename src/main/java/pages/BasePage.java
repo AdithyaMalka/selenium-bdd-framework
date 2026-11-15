@@ -1,10 +1,15 @@
 package pages;
 
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.*;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.testng.asserts.SoftAssert;
+import utils.Constants;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -12,11 +17,19 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static core.driver.DriverManager.*;
+import static utils.StaleElementRecovery.expectedStaleElementActions;
 
+@Slf4j
 public abstract class BasePage {
 
     protected WebDriver driver;
     protected SoftAssert softAssert = new SoftAssert();
+
+    @FindBy(xpath = "//body[@class='js-click-trap']")
+    private WebElement loadingPageSpinner;
+
+    @FindBy(id = "gw-click-overlay")
+    private WebElement gwOverlay;
 
     protected BasePage() {
         this.driver = getDriver();
@@ -58,12 +71,30 @@ public abstract class BasePage {
         }
     }
 
+    protected void setInputValue(WebElement element, String value) {
+        debugLog("Setting value in element to " + value);
+        expectedStaleElementActions(this, element, actions -> {
+            safeClick(element);
+            element.sendKeys(Keys.chord(Keys.CONTROL, "a", Keys.DELETE));
+        });
+        element.sendKeys(value);
+        try{
+            clickOffElement(element);
+        } catch (Exception e) {
+
+        }
+    }
+
     /* =====================================================
        WAITS & INTERACTION
      ===================================================== */
 
     protected void smallWaitForElement(WebElement element) {
         getSmallWait().until(d -> element.isDisplayed());
+    }
+
+    protected void smallWaitForElements(List<WebElement> elements) {
+        getSmallWait().until(ExpectedConditions.visibilityOfAllElements(elements));
     }
 
     protected void mediumWaitForElement(WebElement element) {
@@ -77,6 +108,12 @@ public abstract class BasePage {
             scrollDownToElement(element);
             element.click();
         }
+    }
+
+    protected void clickOffElement(WebElement element) {
+        debugLog("Clicking off Elememt");
+        JavascriptExecutor js = (JavascriptExecutor) getDriver();
+        js.executeScript("arguments[0].blur();", element);
     }
 
     protected void clickOffsetElement(WebElement element) {
@@ -231,4 +268,53 @@ public abstract class BasePage {
         } catch (NoAlertPresentException ignored) {
         }
     }
+
+    protected void waitForLoadingOver() {
+        try {
+            if(loadingPageSpinner.isDisplayed()) {
+                getMediumWait().until(ExpectedConditions.invisibilityOf(loadingPageSpinner));
+            }
+        } catch (TimeoutException | NoSuchElementException exception) {
+            debugLog("loading spinner is not displayed first");
+        }
+        try {
+            if(gwOverlay.isDisplayed()) {
+                getMediumWait().until(ExpectedConditions.invisibilityOf(gwOverlay));
+            }
+        } catch (TimeoutException | NoSuchElementException exception) {
+            debugLog("loading spinner is not displayed second");
+        }
+    }
+
+    protected void debugLog(String message) {
+        if(Constants.DEBUG_MODE) {
+            log.info(message);
+        }
+    }
+
+    public String getCurrentTab() {
+        return getDriver().getWindowHandle();
+    }
+
+    protected void switchTabFrom(String currentTab) {
+        for(String childWindow : getDriver().getWindowHandles()) {
+            if(!childWindow.equals(currentTab)) {
+                getDriver().switchTo().window(childWindow);
+            }
+        }
+    }
+
+    public void openNewTab() {
+        JavascriptExecutor js = (JavascriptExecutor) getDriver();
+        js.executeScript("window.open()");
+        waitForLoadingOver();
+        switchToNewTab();
+        waitForLoadingOver();
+    }
+
+    public void switchToNewTab() {
+        String currentTab = getCurrentTab();
+        switchTabFrom(currentTab);
+    }
+
 }
