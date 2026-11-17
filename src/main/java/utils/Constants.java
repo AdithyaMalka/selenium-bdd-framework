@@ -16,6 +16,9 @@ public class Constants {
     public static final boolean SOFT_ASSERTIONS = false;
     // will continue test execution on assertion failures
 
+    public static final boolean SCREENSHOT_ON_ASSERTION_FAIL = false;
+    // attach screenshots on assertion failures
+
     public static final boolean PASS_ON_ASSERTION_FAILURE = false;
     // will mark test as passed even if there are assertion failures
 

@@ -34,6 +34,7 @@ public class DriverManager {
 
     private static final ThreadLocal<StampRefData> stampRefData =
             new ThreadLocal<>();
+    private static final ThreadLocal<HashMap<String, byte[]>> assertionScreenshotFailureMap = new ThreadLocal<>();
 
     private static final ThreadLocal<HashMap<Integer, String>> generatedSubmissionMap =
             new ThreadLocal<>();
@@ -64,7 +65,9 @@ public class DriverManager {
             new ThreadLocal<>();
     private static final ThreadLocal<List<String>> allAssertValidations =
             new ThreadLocal<>();
-
+    public static HashMap<String, byte[]> getScreenshotFailureMap() {
+        return assertionScreenshotFailureMap.get();
+    }
     public static synchronized WebDriver getDriver() {
 
         WebDriver driver = driverPool.get();
